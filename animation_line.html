@@ -1,0 +1,179 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    overflow: hidden;
+  }
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+  }
+
+  .line {
+    fill: none;
+    stroke: #94A9BA;
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .dot {
+    fill: #94A9BA;
+  }
+</style>
+</head>
+
+<body>
+<svg id="svg" xmlns="http://www.w3.org/2000/svg">
+  <path id="path" class="line"></path>
+  <circle id="dot" class="dot" r="8" cx="0" cy="0" style="opacity:0;"></circle>
+</svg>
+
+<script>
+const svg  = document.getElementById('svg');
+const path = document.getElementById('path');
+const dot  = document.getElementById('dot');
+
+/* ---- Layout Controls ---- */
+
+const EDGE_OFFSET = 20;     // 🔥 20px from both left and right edges
+const EDGE_OFFSET_RIGHT = 0;
+  const PAD_Y = 40;
+const R = 60;
+
+const BOTTOM_PAD = 140;
+const TAIL = 140;
+const MID_OFFSET = 0;
+
+let totalLen = 1;
+
+/* ---- Build Path ---- */
+
+function buildPath() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.setAttribute('preserveAspectRatio', 'none');
+
+  const startX = w - EDGE_OFFSET_RIGHT;  // 20px from right
+  const startY = PAD_Y;
+
+  const leftX = EDGE_OFFSET;       // 20px from left
+  const bottomY = h - BOTTOM_PAD;
+
+  const bottomEndX = (w / 2) + MID_OFFSET;
+  const tailEndY = Math.min(h - 10, bottomY + TAIL);
+
+  const d = [
+    // Start top-right (20px in)
+    `M ${startX} ${startY}`,
+
+    // Go left across top
+    `H ${leftX + R}`,
+
+    // Rounded top-left corner
+    `A ${R} ${R} 0 0 0 ${leftX} ${PAD_Y + R}`,
+
+    // Down left side
+    `V ${bottomY - R}`,
+
+    // Rounded bottom-left corner
+    `A ${R} ${R} 0 0 0 ${leftX + R} ${bottomY}`,
+
+    // Right along bottom
+    `H ${bottomEndX - R}`,
+
+    // Rounded turn downward in middle
+    `A ${R} ${R} 0 0 1 ${bottomEndX} ${bottomY + R}`,
+
+    // Final vertical tail
+    `V ${tailEndY}`
+  ].join(' ');
+
+  path.setAttribute('d', d);
+
+  totalLen = path.getTotalLength();
+  path.style.strokeDasharray = totalLen;
+  path.style.strokeDashoffset = totalLen;
+
+  dot.style.opacity = 0;
+}
+
+/* ---- Drawing ---- */
+
+function renderProgress(p) {
+  path.style.strokeDashoffset = totalLen * (1 - p);
+
+  if (p <= 0.001) {
+    dot.style.opacity = 0;
+    return;
+  }
+
+  const pt = path.getPointAtLength(totalLen * p);
+  dot.setAttribute('cx', pt.x);
+  dot.setAttribute('cy', pt.y);
+  dot.style.opacity = 1;
+}
+
+/* ---- Smooth Animation ---- */
+
+let targetP = 0;
+let currentP = 0;
+
+function tick() {
+  const SMOOTHING = 0.12;
+  currentP += (targetP - currentP) * SMOOTHING;
+
+  if (Math.abs(targetP - currentP) < 0.0005)
+    currentP = targetP;
+
+  renderProgress(currentP);
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+/* ---- Responsive Rebuild ---- */
+
+function rebuild() {
+  const last = targetP;
+  buildPath();
+  targetP = last;
+  currentP = last;
+}
+
+window.addEventListener('resize', rebuild);
+window.addEventListener('orientationchange', () => setTimeout(rebuild, 50));
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', rebuild);
+}
+
+/* ---- Receive Scroll Progress ---- */
+
+window.onmessage = (event) => {
+  const data = event.data;
+  if (!data || data.type !== 'scrollProgress') return;
+  targetP = Math.max(0, Math.min(1, Number(data.progress) || 0));
+};
+
+/* ---- Notify Wix Ready ---- */
+
+window.parent.postMessage({ type: 'scrollLineReady' }, '*');
+
+/* ---- Init ---- */
+
+buildPath();
+</script>
+</body>
+</html>
