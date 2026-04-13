@@ -1,20 +1,352 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light.css" />
+    <meta charset="utf-8" />
+    <title>Timetable Header</title>
+
+    <style>
+      @font-face {
+        font-family: 'Inter';
+        src: url('https://static.wixstatic.com/ufonts/c3d81c_650fdb0bba07408ab778b00fdfe7dda3/woff2/file.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Inter';
+        src: url('https://static.wixstatic.com/ufonts/c3d81c_97b9e8ea4c724798a6ab1f78ddd2c8e2/woff2/file.woff2') format('woff2');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Inter';
+        src: url('https://static.wixstatic.com/ufonts/c3d81c_3e6950329af9447aa64643b6295b6f47/woff2/file.woff2') format('woff2');
+        font-weight: 600;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Inter';
+        src: url('https://static.wixstatic.com/ufonts/c3d81c_172ab28f4f514ad19c2ca9dcf346ac87/woff2/file.woff2') format('woff2');
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      :root {
+        --md-sys-color-dark-font: #1f1f1f;
+        --md-sys-color-border: #dddddd;
+        --md-sys-color-date-background: #f7f7f7;
+        --md-sys-color-date-font: #1f1f1f;
+        --md-sys-color-court-background: #ffffff;
+        --md-sys-color-court-font: #1f1f1f;
+        --md-sys-color-nav-button-main-g1: #fafafa;
+        --md-sys-color-nav-button-main-g2: #ececec;
+        --md-sys-color-nav-button-main-hover: #dddddd;
+        --md-sys-color-nav-button-arrow: #555555;
+        --md-sys-color-nav-button-arrow-hover: #333333;
+        --md-sys-color-nav-button-border: #d0d0d0;
+      }
+
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        font-family: 'Inter', sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      #timetable {
+        height: 100%;
+      }
+
+      .table-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+      }
+
+      table {
+        table-layout: fixed;
+        width: 100%;
+        height: 90px;
+        border-collapse: collapse;
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+        font-weight: 500;
+        letter-spacing: 0.2px;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+      }
+
+      col.time-col {
+        width: 60px;
+        min-width: 60px;
+        max-width: 60px;
+      }
+
+      thead {
+        height: 100%;
+      }
+
+      thead tr:nth-child(1) {
+        height: 45px;
+      }
+
+      thead tr:nth-child(2) {
+        height: 45px;
+      }
+
+      thead th {
+        padding: 0;
+        margin: 0;
+        line-height: normal;
+        vertical-align: middle;
+        border: 1px solid var(--md-sys-color-border);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: bold;
+      }
+
+      thead tr:nth-child(1) th {
+        background-color: var(--md-sys-color-date-background);
+        color: var(--md-sys-color-date-font);
+        border-bottom: none;
+        border-left: none;
+        border-right: none;
+        border-top: none;
+        font-size: 16px;
+      }
+
+      thead tr:nth-child(2) th {
+        background-color: var(--md-sys-color-court-background);
+        color: var(--md-sys-color-court-font);
+        font-weight: 300;
+        font-size: 14px;
+        border-bottom: 2px solid #DDDDDD !important;
+        border-left: none;
+        border-right: none;
+        border-top: none;
+      }
+
+      th:first-child,
+      th:last-child {
+        vertical-align: middle;
+      }
+
+      .court-nav-btn {
+        background: linear-gradient(
+          to bottom,
+          var(--md-sys-color-nav-button-main-g1),
+          var(--md-sys-color-nav-button-main-g2)
+        );
+        color: var(--md-sys-color-nav-button-arrow);
+        border: 1px solid var(--md-sys-color-nav-button-border);
+        border-radius: 50%;
+        font-size: 18px;
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        transition: background 0.3s ease, transform 0.2s ease;
+      }
+
+      .court-nav-btn:hover {
+        background: linear-gradient(
+          to bottom,
+          var(--md-sys-color-nav-button-main-g2),
+          var(--md-sys-color-nav-button-main-hover)
+        );
+        color: var(--md-sys-color-nav-button-arrow-hover);
+        transform: scale(1.05);
+      }
+    </style>
   </head>
   <body>
     <div id="timetable"></div>
+
     <script>
-      const TRUSTED_ORIGIN = "https://www.tcneureut.de";
-      window.onmessage = function(event) {
+      const TRUSTED_ORIGIN = 'https://www.tcneureut.de';
+      const container = document.getElementById('timetable');
+
+      function isSafeString(value) {
+        return typeof value === 'string';
+      }
+
+      function isSafeCourt(court) {
+        return (
+          court &&
+          typeof court === 'object' &&
+          typeof court.number === 'number' &&
+          Number.isFinite(court.number) &&
+          (typeof court.name === 'string' || typeof court.name === 'undefined')
+        );
+      }
+
+      function isSafeDay(day) {
+        return (
+          day &&
+          typeof day === 'object' &&
+          typeof day.weekday === 'string' &&
+          typeof day.dateLabel === 'string'
+        );
+      }
+
+      function isSafeTheme(theme) {
+        return theme && typeof theme === 'object';
+      }
+
+      function validatePayload(payload) {
+        if (!payload || typeof payload !== 'object') return false;
+        if (typeof payload.reducedCourtView !== 'boolean') return false;
+        if (!isSafeString(payload.courtPrefix)) return false;
+        if (!Array.isArray(payload.visibleCourts)) return false;
+        if (!Array.isArray(payload.days)) return false;
+        if (!isSafeTheme(payload.theme)) return false;
+        if (!payload.visibleCourts.every(isSafeCourt)) return false;
+        if (!payload.days.every(isSafeDay)) return false;
+        return true;
+      }
+
+      function applyTheme(theme) {
+        const root = document.documentElement;
+
+        const vars = {
+          '--md-sys-color-dark-font': theme.darkFont,
+          '--md-sys-color-border': theme.border,
+          '--md-sys-color-date-background': theme.dateBackground,
+          '--md-sys-color-date-font': theme.dateFont,
+          '--md-sys-color-court-background': theme.courtBackground,
+          '--md-sys-color-court-font': theme.courtFont,
+          '--md-sys-color-nav-button-main-g1': theme.navButtonMainG1,
+          '--md-sys-color-nav-button-main-g2': theme.navButtonMainG2,
+          '--md-sys-color-nav-button-main-hover': theme.navButtonMainHover,
+          '--md-sys-color-nav-button-arrow': theme.navButtonArrow,
+          '--md-sys-color-nav-button-arrow-hover': theme.navButtonArrowHover,
+          '--md-sys-color-nav-button-border': theme.navButtonBorder
+        };
+
+        for (const [key, value] of Object.entries(vars)) {
+          if (typeof value === 'string') {
+            root.style.setProperty(key, value);
+          }
+        }
+      }
+
+      function createNavButton(label, messageType) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'court-nav-btn';
+        button.textContent = label;
+
+        button.addEventListener('click', () => {
+          window.parent.postMessage({ type: messageType }, TRUSTED_ORIGIN);
+        });
+
+        return button;
+      }
+
+      function renderHeader(payload) {
+        const {
+          reducedCourtView,
+          courtPrefix,
+          visibleCourts,
+          days,
+          theme
+        } = payload;
+
+        applyTheme(theme);
+        container.replaceChildren();
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'table-container';
+
+        const table = document.createElement('table');
+        table.className = 'timetable';
+
+        const colgroup = document.createElement('colgroup');
+
+        const firstCol = document.createElement('col');
+        firstCol.className = 'time-col';
+        colgroup.appendChild(firstCol);
+
+        for (const _day of days) {
+          for (const _court of visibleCourts) {
+            const col = document.createElement('col');
+            col.style.width = 'auto';
+            colgroup.appendChild(col);
+          }
+        }
+
+        const lastCol = document.createElement('col');
+        lastCol.className = 'time-col';
+        colgroup.appendChild(lastCol);
+
+        const thead = document.createElement('thead');
+
+        const row1 = document.createElement('tr');
+        const row2 = document.createElement('tr');
+
+        const emptyTopLeft = document.createElement('th');
+        row1.appendChild(emptyTopLeft);
+
+        for (const day of days) {
+          const th = document.createElement('th');
+          th.colSpan = visibleCourts.length;
+          th.textContent = `${day.weekday} - ${day.dateLabel}`;
+          row1.appendChild(th);
+        }
+
+        const emptyTopRight = document.createElement('th');
+        row1.appendChild(emptyTopRight);
+
+        const navLeftCell = document.createElement('th');
+        if (reducedCourtView) {
+          navLeftCell.appendChild(createNavButton('<', 'prevCourt'));
+        }
+        row2.appendChild(navLeftCell);
+
+        for (const _day of days) {
+          for (const court of visibleCourts) {
+            const th = document.createElement('th');
+            th.textContent = `${courtPrefix}${court.number}`;
+            row2.appendChild(th);
+          }
+        }
+
+        const navRightCell = document.createElement('th');
+        if (reducedCourtView) {
+          navRightCell.appendChild(createNavButton('>', 'nextCourt'));
+        }
+        row2.appendChild(navRightCell);
+
+        thead.appendChild(row1);
+        thead.appendChild(row2);
+
+        table.appendChild(colgroup);
+        table.appendChild(thead);
+        wrapper.appendChild(table);
+        container.appendChild(wrapper);
+      }
+
+      window.addEventListener('message', (event) => {
         if (event.origin !== TRUSTED_ORIGIN) return;
         if (event.source !== window.parent) return;
-        if (typeof event.data !== "string") return;
-        
-        const container = document.getElementById("timetable");
-        container.innerHTML = event.data;
-      }
+        if (!event.data || typeof event.data !== 'object') return;
+        if (event.data.type !== 'renderHeader') return;
+        if (!validatePayload(event.data.payload)) return;
+
+        renderHeader(event.data.payload);
+      });
     </script>
   </body>
 </html>
