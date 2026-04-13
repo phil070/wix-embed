@@ -1,30 +1,20 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8" />
-    <title>Timetable</title>
-    <script src="https://unpkg.com/dompurify@3.1.6/dist/purify.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light.css" />
   </head>
   <body>
     <div id="timetable"></div>
-
     <script>
       const TRUSTED_ORIGIN = "https://www.tcneureut.de";
-      const container = document.getElementById("timetable");
-
-      window.addEventListener("message", (event) => {
+      window.onmessage = function(event) {
         if (event.origin !== TRUSTED_ORIGIN) return;
         if (event.source !== window.parent) return;
-        if (typeof event.data !== "object" || event.data === null) return;
-        if (event.data.type !== "render-html") return;
-        if (typeof event.data.html !== "string") return;
-
-        const clean = DOMPurify.sanitize(event.data.html, {
-          USE_PROFILES: { html: true }
-        });
-
-        container.innerHTML = clean;
-      });
+        if (typeof event.data !== "string") return;
+        
+        const container = document.getElementById("timetable");
+        container.innerHTML = event.data;
+      }
     </script>
   </body>
 </html>
