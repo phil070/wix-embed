@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light.css" />
+  </head>
+  <body>
+    <div id="timetable"></div>
+
+    <script>
+      window.onmessage = function(event) {
+        if (typeof event.data === "string") {
+          const container = document.getElementById("timetable");
+          container.innerHTML = event.data;
+        }
+      }
+      
+    </script>
+   
+  </body>
+</html>
