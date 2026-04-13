@@ -61,7 +61,7 @@
   <script src="https://unpkg.com/tippy.js@6"></script>
 
   <script>
-    const TRUSTED_ORIGIN = "https://tcneureut.de/";
+    const TRUSTED_ORIGIN = "https://tcneureut.de";
     const timeline = document.getElementById("timeline");
     let todayVisible = false;
 
@@ -101,7 +101,7 @@
                   slotDate: cell.dataset.date,
                   slotCourt: cell.dataset.court,
                   slotTime: cell.dataset.time,
-                }, "*");
+                }, TRUSTED_ORIGIN);
               });
             });
 
@@ -114,7 +114,7 @@
                   slotDate: cell.dataset.date,
                   slotCourt: cell.dataset.court,
                   slotTime: cell.dataset.time
-                }, "*");
+                }, TRUSTED_ORIGIN);
               });
             });
 
@@ -226,7 +226,7 @@
       if (now - lastUpdateSent > UPDATE_INTERVAL) {
         lastActivityTime = now;
         lastUpdateSent = now;
-        window.parent.postMessage({ type: "activity", time: lastActivityTime }, "*");
+        window.parent.postMessage({ type: "activity", time: lastActivityTime }, TRUSTED_ORIGIN);
       }
     }
 
