@@ -76,7 +76,6 @@
       const clamped = Math.min(Math.max(currentMinutes, startMinutes), endMinutes);
       const percentage = (clamped - startMinutes) / (endMinutes - startMinutes);
 
-      // ✅ Fixed backticks
       const container = document.querySelector(".table-container") || document.body;
       const totalHeight = container.scrollHeight; // visible height only
       timeline.style.top = `${totalHeight * percentage}px`;
@@ -235,5 +234,4 @@
     document.addEventListener("touchstart", updateActivity);
   </script>
 </body>
-
 </html>
