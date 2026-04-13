@@ -1,0 +1,37 @@
+<div id="weather-container">
+  <a class="weatherwidget-io" 
+     href="https://forecast7.com/de/49d058d38/neureut/" 
+     data-days="3" 
+     data-theme="original" 
+     data-basecolor="#4B5158">
+     Karlsruhe-Neureut, Germany
+  </a>
+</div>
+
+<script>
+  function loadWeather() {
+    // Replace the widget markup
+    document.getElementById("weather-container").innerHTML = `
+      <a class="weatherwidget-io" 
+         href="https://forecast7.com/de/49d058d38/neureut/" 
+         data-days="3" 
+         data-theme="original" 
+         data-basecolor="#4B5158">
+         Karlsruhe-Neureut, Germany
+      </a>`;
+
+    // Re-run the widget initialization if it's loaded
+    if (window.__weatherwidget_init) {
+      window.__weatherwidget_init();
+    }
+  }
+
+  // Load once at start
+  loadWeather();
+
+  // Refresh every 10 minutes (1800000 ms)
+  setInterval(loadWeather, 10 * 60 * 1000);
+</script>
+
+<!-- Load the weatherwidget script once -->
+<script id="weatherwidget-io-js" src="https://weatherwidget.io/js/widget.min.js"></script>
