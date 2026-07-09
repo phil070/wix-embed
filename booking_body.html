@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light.css" />
   <style>
@@ -12,7 +11,6 @@
       overflow: hidden;
       height: 100%;
     }
-
     .timeline {
       position: absolute;
       left: 0;
@@ -25,7 +23,6 @@
       opacity: 0;
       transition: opacity 0.8s ease-in-out;
     }
-
     .timeline::before {
       content: "";
       position: absolute;
@@ -38,58 +35,44 @@
       border-radius: 50%;
       box-shadow: 0 0 4px rgba(255, 76, 76, 0.6);
     }
-
     @keyframes pulse {
-
       0%,
       100% {
         opacity: 0.4;
       }
-
       50% {
         opacity: 1;
       }
     }
   </style>
 </head>
-
 <body>
   <div id="timetable"></div>
   <div class="timeline" id="timeline"></div>
-
   <script src="https://unpkg.com/@popperjs/core@2"></script>
   <script src="https://unpkg.com/tippy.js@6"></script>
-
   <script>
     const TRUSTED_ORIGIN = "https://www.tcneureut.de";
     const timeline = document.getElementById("timeline");
     let todayVisible = false;
-
     function updateTimeline() {
       if (!todayVisible || timeline.style.display !== "block") return;
-
       const now = new Date();
       const startMinutes = 8 * 60;  // timetable starts at 08:00
       const endMinutes = 21 * 60;   // timetable ends at 21:00
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
       const clamped = Math.min(Math.max(currentMinutes, startMinutes), endMinutes);
       const percentage = (clamped - startMinutes) / (endMinutes - startMinutes);
-
       const container = document.querySelector(".table-container") || document.body;
       const totalHeight = container.scrollHeight; // visible height only
       timeline.style.top = `${totalHeight * percentage}px`;
-
     }
-
     window.onmessage = function (event) {
       if (event.origin !== TRUSTED_ORIGIN) return;
       if (event.source !== window.parent) return;
-
       if (typeof event.data === "string") {
         const container = document.getElementById("timetable");
         container.innerHTML = event.data;
-
         setTimeout(() => {
           // Handle booking clicks
           container.querySelectorAll("td.frei[data-date][data-time][data-court]")
@@ -103,7 +86,6 @@
                 }, TRUSTED_ORIGIN);
               });
             });
-
           container.querySelectorAll("td.user-booking[data-booking-id][data-date][data-time][data-court]")
             .forEach(cell => {
               cell.addEventListener("click", () => {
@@ -116,7 +98,6 @@
                 }, TRUSTED_ORIGIN);
               });
             });
-
           container.querySelectorAll("td.user-booking-edit[data-booking-id][data-date][data-time][data-court]")
             .forEach(cell => {
               cell.addEventListener("click", () => {
@@ -129,7 +110,6 @@
                 }, TRUSTED_ORIGIN);
               });
             });
-
           // Tooltips
           const tooltipTargets = container.querySelectorAll('td[data-tooltip]');
           const tooltips = Array.from(tooltipTargets).map(el =>
@@ -149,42 +129,32 @@
           tippy.createSingleton(tooltips, {
             overrides: ['placement', 'trigger', 'hideOnClick', 'delay'],
           });
-
           // Determine if today is visible in current timetable
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           const todayStr = today.getFullYear() + '-' +
             String(today.getMonth() + 1).padStart(2, '0') + '-' +
             String(today.getDate()).padStart(2, '0');
-
           const visibleDates = Array.from(
             container.querySelectorAll("td[data-date]")
           ).map(cell => cell.dataset.date);
-
           todayVisible = visibleDates.includes(todayStr);
-
           // Check if multi-day view (3-day view)
           const uniqueDates = [...new Set(visibleDates)];
           const multiDayView = uniqueDates.length > 1;
-
           if (todayVisible) {
             const todayCells = container.querySelectorAll(`td[data-date="${todayStr}"]`);
-
             if (todayCells.length > 0) {
               const firstCell = todayCells[0];
               const lastCell = todayCells[todayCells.length - 1];
-
               const firstRect = firstCell.getBoundingClientRect();
               const lastRect = lastCell.getBoundingClientRect();
               const tableContainer = document.querySelector(".table-container");
               const containerRect = tableContainer.getBoundingClientRect();
-
               timeline.style.left = `${firstRect.left - containerRect.left}px`;
               timeline.style.width = `${lastRect.right - firstRect.left}px`;
             }
-
             timeline.style.display = "block";
-
             // Use two animation frames to ensure proper layout before showing
             requestAnimationFrame(() => {
               updateTimeline(); // update immediately
@@ -197,10 +167,8 @@
         }, 300); // wait for DOM to render fully
       }
     };
-
     // Update timeline every minute (only if visible)
     setInterval(updateTimeline, 60000);
-
     // Trigger recalculation when window resizes
     window.addEventListener("resize", () => {
       if (todayVisible) {
@@ -209,30 +177,23 @@
         const todayStr = today.getFullYear() + '-' +
           String(today.getMonth() + 1).padStart(2, '0') + '-' +
           String(today.getDate()).padStart(2, '0');
-
-
         const todayCells = document.querySelectorAll(`td[data-date="${todayStr}"]`);
         if (todayCells.length > 0) {
           const firstCell = todayCells[0];
           const lastCell = todayCells[todayCells.length - 1];
-
           const containerRect = document.querySelector(".table-container").getBoundingClientRect();
           const firstRect = firstCell.getBoundingClientRect();
           const lastRect = lastCell.getBoundingClientRect();
-
           timeline.style.left = `${firstRect.left - containerRect.left}px`;
           timeline.style.width = `${lastRect.right - firstRect.left}px`;
         }
-
         // Update vertical position after resizing
         updateTimeline();
       }
     });
-
     let lastActivityTime = Date.now();
     let lastUpdateSent = 0;
     const UPDATE_INTERVAL = 500; // update at most every 500ms
-
     function updateActivity() {
       const now = Date.now();
       if (now - lastUpdateSent > UPDATE_INTERVAL) {
@@ -241,7 +202,6 @@
         window.parent.postMessage({ type: "activity", time: lastActivityTime }, TRUSTED_ORIGIN);
       }
     }
-
     document.addEventListener("mousemove", updateActivity);
     document.addEventListener("mousedown", updateActivity);
     document.addEventListener("touchstart", updateActivity);
