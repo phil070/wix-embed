@@ -117,6 +117,19 @@
               });
             });
 
+          container.querySelectorAll("td.user-booking-edit[data-booking-id][data-date][data-time][data-court]")
+            .forEach(cell => {
+              cell.addEventListener("click", () => {
+                window.parent.postMessage({
+                  type: "edit_booking",
+                  bookingId: cell.dataset.bookingId,
+                  slotDate: cell.dataset.date,
+                  slotCourt: cell.dataset.court,
+                  slotTime: cell.dataset.time
+                }, TRUSTED_ORIGIN);
+              });
+            });
+
           // Tooltips
           const tooltipTargets = container.querySelectorAll('td[data-tooltip]');
           const tooltips = Array.from(tooltipTargets).map(el =>
